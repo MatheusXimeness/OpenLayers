@@ -1,17 +1,51 @@
 import 'ol/ol.css';
-import {Map, View} from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import OSM from 'ol/source/OSM';
+import Map from 'ol/Map';
+import View from 'ol/View';
+import Draw from 'ol/interaction/Draw';
+import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
+import {OSM, Vector as VectorSource} from 'ol/source';
 
-const map = new Map({
+var raster = new TileLayer({
+  source: new OSM()
+});
+
+var source = new VectorSource({wrapX: false});
+
+var vector = new VectorLayer({
+  source: source
+});
+
+var map = new Map({
+  layers: [raster, vector],
   target: 'map',
-  layers: [
-    new TileLayer({
-      source: new OSM()
-    })
-  ],
   view: new View({
-    center: [0, 0],
-    zoom: 0
+    center: [-11000000, 4600000],
+    zoom: 4
   })
 });
+
+var typeSelect = document.getElementById('type');
+
+var draw; // global so we can remove it later
+function addInteraction() {
+  var value = typeSelect.value;
+  if (value !== 'None') {
+    draw = new Draw({
+      source: source,
+      type: typeSelect.value,
+      freehand: true
+    });
+    map.addInteraction(draw);
+  }
+}
+
+
+/**
+ * Handle change event.
+ */
+typeSelect.onchange = function() {
+  map.removeInteraction(draw);
+  addInteraction();
+};
+
+addInteraction();
